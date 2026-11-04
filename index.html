@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0D0E12">
+    <title>Rupee Discount Calculator</title>
+    <link rel="stylesheet" href="css/tailwind.css">
+    <link rel="stylesheet" href="css/fontawesome/all.min.css">
+    <style>
+        html, body { height: 100%; }
+        body { -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; }
+        .btn-active:active { transform: scale(0.95); opacity: 0.9; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        input { -webkit-user-select: text; user-select: text; }
+    </style>
+</head>
+<body class="bg-darkBg text-slate-100 font-sans flex justify-center items-center selection:bg-accentOrange/30">
+
+    <div class="w-full max-w-sm h-[100dvh] sm:h-auto sm:max-h-[700px] flex flex-col justify-between p-3 bg-darkBg border border-white/5 sm:rounded-3xl shadow-2xl overflow-hidden">
+
+        <!-- App Header -->
+        <header class="flex justify-between items-center py-1 border-b border-white/5 mb-1">
+            <div class="flex items-center space-x-2">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-accentOrange to-amber-400 flex items-center justify-center text-slate-900 font-extrabold shadow-md shadow-accentOrange/20">₹</div>
+                <div>
+                    <h1 class="font-bold text-sm leading-tight text-white">Fast Calc</h1>
+                    <p class="text-[10px] text-slate-400">Default % saved</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-1.5">
+                <button id="clearHistoryBtn" title="Clear History" class="w-8 h-8 rounded-full bg-darkCard text-slate-400 hover:text-red-400 flex items-center justify-center transition border border-white/5 btn-active">
+                    <i class="fa-regular fa-trash-can text-xs"></i>
+                </button>
+                <button id="settingsBtn" title="Set Default %" class="w-8 h-8 rounded-full bg-darkCard text-slate-400 hover:text-white flex items-center justify-center transition border border-white/5 btn-active">
+                    <i class="fa-solid fa-sliders text-xs"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Workspace -->
+        <main class="flex-1 flex flex-col justify-between space-y-2 min-h-0">
+
+            <!-- Result Card -->
+            <div id="resultCard" class="bg-gradient-to-b from-darkCard to-slate-900 rounded-2xl p-3 border border-white/10 shadow-xl relative overflow-hidden">
+                <div class="absolute -right-6 -bottom-6 w-28 h-28 bg-accentOrange/10 rounded-full blur-xl pointer-events-none"></div>
+
+                <div class="flex justify-between items-center mb-1">
+                    <span id="modeBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-accentOrange/20 text-accentOrange border border-accentOrange/30">Discount (-40%)</span>
+                    <span id="equationText" class="text-[10px] text-slate-400 font-mono tracking-wide">₹750 - 40%</span>
+                </div>
+
+                <div>
+                    <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Final Price</div>
+                    <div class="flex items-baseline space-x-0.5">
+                        <span class="text-lg font-light text-slate-400">₹</span>
+                        <span id="finalPriceDisplay" class="text-4xl font-extrabold tracking-tight text-white drop-shadow">450</span>
+                    </div>
+                </div>
+
+                <div class="mt-1 pt-1.5 border-t border-white/5 flex justify-between items-center">
+                    <span id="savingsLabel" class="text-slate-400 font-medium text-[11px]">You Save:</span>
+                    <span id="savingsDisplay" class="font-bold text-emerald-400 text-sm">₹300.00</span>
+                </div>
+            </div>
+
+            <!-- Mode Toggle -->
+            <div class="bg-darkCard p-1 rounded-xl flex border border-white/5 text-[11px]">
+                <button id="modeDiscount" class="flex-1 py-1.5 rounded-lg font-bold transition-all flex items-center justify-center space-x-1 bg-accentOrange text-slate-950 shadow">
+                    <i class="fa-solid fa-tag text-[10px]"></i><span>Discount (-%)</span>
+                </button>
+                <button id="modeMarkup" class="flex-1 py-1.5 rounded-lg font-bold text-slate-400 transition-all flex items-center justify-center space-x-1">
+                    <i class="fa-solid fa-arrow-trend-up text-[10px]"></i><span>Markup (+%)</span>
+                </button>
+            </div>
+
+            <!-- Base Price -->
+            <div class="space-y-0.5">
+                <div class="flex justify-between items-center px-1">
+                    <span class="text-[11px] font-medium text-slate-400">Type Base Price</span>
+                    <span class="text-[10px] text-slate-500">Auto-calculates</span>
+                </div>
+                <div class="relative flex items-center">
+                    <span class="absolute left-3 text-lg font-semibold text-slate-400">₹</span>
+                    <div id="priceDisplay" class="w-full bg-darkInput border border-white/10 rounded-xl py-1.5 pl-8 pr-10 text-xl font-bold text-white min-h-[44px] flex items-center overflow-x-auto no-scrollbar shadow-inner">
+                        <span id="priceVal" class="text-white">750</span>
+                        <span id="placeholderVal" class="text-slate-600 hidden">0</span>
+                    </div>
+                    <button id="clearInputBtn" class="absolute right-2 w-7 h-7 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center transition btn-active">
+                        <i class="fa-solid fa-xmark text-xs"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Presets -->
+            <div>
+                <div class="flex justify-between items-center mb-1 px-1">
+                    <span class="text-[11px] font-medium text-slate-400">Default Percentage</span>
+                    <span class="text-[11px] text-accentOrange font-medium" id="editPresetBtn">Saved: <span id="activePresetLabel" class="font-bold">40%</span></span>
+                </div>
+                <div class="grid grid-cols-5 gap-1" id="presetButtonsGrid">
+                    <button data-pct="10" class="preset-btn py-1.5 rounded-lg border font-semibold text-xs transition btn-active">10%</button>
+                    <button data-pct="20" class="preset-btn py-1.5 rounded-lg border font-semibold text-xs transition btn-active">20%</button>
+                    <button data-pct="30" class="preset-btn py-1.5 rounded-lg border font-semibold text-xs transition btn-active">30%</button>
+                    <button data-pct="40" class="preset-btn py-1.5 rounded-lg border font-semibold text-xs transition btn-active">40%</button>
+                    <button data-pct="50" class="preset-btn py-1.5 rounded-lg border font-semibold text-xs transition btn-active">50%</button>
+                </div>
+            </div>
+
+            <!-- Keypad -->
+            <div id="keypad" class="grid grid-cols-4 gap-1">
+                <button data-key="7" class="py-2.5 bg-darkCard border border-white/5 rounded-xl text-lg font-bold text-white shadow-sm btn-active">7</button>
+                <button data-key="8" class="py-2.5 bg-darkCard border border-white/5 rounded-xl text-lg font-bold text-white shadow-sm btn-active">8</button>
+                <button data-key="9" class="py-2.5 bg-darkCard border border-white/5 rounded-xl text-lg font-bold text-white shadow-sm btn-active">9</button>
+                <button data-key="backspace" class="py-2.5 bg-slate-800/80 border border-white/5 rounded-xl text-sm font-bold text-red-400 flex items-center justify-center shadow-sm btn-active"><i class="fa-solid fa-delete-left text-sm"></i></button>
+
+                <button data-key="4" class="py-2.5 bg-darkCard border border-white/5 rounded-xl text-lg font-bold text-white shadow-sm btn-active">4</button>
+                <button data-key="5" class="py-2.5 bg-darkCard border border-white/5 rounded-xl text-lg font-bold text-white shadow-sm btn-active">5</button>
+                <button data-key="6" class="py-2.5 bg-darkCard border border-white/5 rounded-xl text-lg font-bold text-white shadow-sm btn-active">6</button>
+                <button data-key="clear" class="py-2.5 bg-slate-800/80 border border-white/5 rounded-xl text-xs font-bold text-amber-400 shadow-sm btn-active">AC</button>
+
+                <button data-key="1" class="py-2.5 bg-darkCard border border-white/5 rounded-xl text-lg font-bold text-white shadow-sm btn-active">1</button>
+                <button data-key="2" class="py-2.5 bg-darkCard border border-white/5 rounded-xl text-lg font-bold text-white shadow-sm btn-active">2</button>
+                <button data-key="3" class="py-2.5 bg-darkCard border border-white/5 rounded-xl text-lg font-bold text-white shadow-sm btn-active">3</button>
+                <button data-key="00" class="py-2.5 bg-darkCard border border-white/5 rounded-xl text-xs font-bold text-slate-300 shadow-sm btn-active">00</button>
+
+                <button data-key="0" class="py-2.5 bg-darkCard border border-white/5 rounded-xl text-lg font-bold text-white shadow-sm btn-active col-span-2">0</button>
+                <button data-key="." class="py-2.5 bg-darkCard border border-white/5 rounded-xl text-lg font-bold text-slate-300 shadow-sm btn-active">.</button>
+                <button id="equalsBtn" class="py-2.5 bg-accentOrange text-slate-950 font-black text-base rounded-xl shadow-md shadow-accentOrange/20 btn-active flex items-center justify-center"><i class="fa-solid fa-check"></i></button>
+            </div>
+
+            <!-- Custom % -->
+            <div id="customPctContainer" class="bg-darkCard/60 p-1.5 rounded-xl border border-white/5 flex items-center gap-1.5">
+                <span class="text-[11px] text-slate-400 font-medium whitespace-nowrap pl-1">Custom %:</span>
+                <input type="number" inputmode="decimal" id="customPctInput" placeholder="e.g. 18" min="0" max="100" step="any"
+                    class="bg-darkInput border border-white/10 rounded-lg px-2 py-1 text-xs font-bold text-white focus:outline-none focus:border-accentOrange w-full">
+                <button id="saveCustomPctBtn" class="bg-slate-800 text-[11px] font-bold px-3 py-1.5 rounded-lg text-slate-200 transition btn-active whitespace-nowrap">Save Default</button>
+            </div>
+        </main>
+
+        <!-- History -->
+        <footer class="mt-1 pt-1.5 border-t border-white/5">
+            <div class="flex justify-between items-center mb-1 px-0.5">
+                <h3 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Recent History</h3>
+                <span id="historyCount" class="text-[9px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded-full">0 items</span>
+            </div>
+            <div id="historyList" class="space-y-1 max-h-[72px] overflow-y-auto no-scrollbar pr-0.5">
+                <p id="emptyHistoryText" class="text-[11px] text-slate-600 text-center py-0.5 italic">No recent calculations</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 bg-slate-800 border border-white/10 text-white text-[11px] px-3 py-1.5 rounded-full shadow-2xl opacity-0 pointer-events-none transition-all duration-300 flex items-center space-x-1 z-50">
+        <i class="fa-solid fa-circle-check text-emerald-400"></i>
+        <span id="toastMsg">Saved!</span>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const MAX_HISTORY = 20;
+        const AUTO_SAVE_MS = 1500;
+
+        const state = {
+            priceStr: '750',
+            percentage: 40,
+            isDiscountMode: true,
+            history: []
+        };
+
+        // ---- DOM ----
+        const $ = (id) => document.getElementById(id);
+        const priceVal = $('priceVal');
+        const placeholderVal = $('placeholderVal');
+        const finalPriceDisplay = $('finalPriceDisplay');
+        const savingsDisplay = $('savingsDisplay');
+        const savingsLabel = $('savingsLabel');
+        const equationText = $('equationText');
+        const modeBadge = $('modeBadge');
+        const modeDiscountBtn = $('modeDiscount');
+        const modeMarkupBtn = $('modeMarkup');
+        const presetButtons = document.querySelectorAll('.preset-btn');
+        const activePresetLabel = $('activePresetLabel');
+        const customPctInput = $('customPctInput');
+        const historyList = $('historyList');
+        const emptyHistoryText = $('emptyHistoryText');
+        const historyCount = $('historyCount');
+        const toast = $('toast');
+        const toastMsg = $('toastMsg');
+
+        // ---- Safe storage (works in WebView and browsers) ----
+        const store = {
+            get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+            set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+        };
+
+        // ---- Helpers ----
+        const fmtMoney = (n) => '₹' + n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const fmtPlain = (n) => n.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+        const fmtPct = (n) => String(Math.round(n * 100) / 100);
+
+        let toastTimer;
+        function showToast(msg) {
+            toastMsg.textContent = msg;
+            toast.classList.remove('opacity-0');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => toast.classList.add('opacity-0'), 1400);
+        }
+
+        // ---- Calculation ----
+        function compute() {
+            const price = parseFloat(state.priceStr);
+            if (isNaN(price) || price <= 0) return null;
+            const pct = state.percentage;
+            const delta = price * pct / 100;
+            const final = state.isDiscountMode ? price - delta : price + delta;
+            return { price, pct, delta, final, discount: state.isDiscountMode };
+        }
+
+        function calculate() {
+            const sign = state.isDiscountMode ? '-' : '+';
+            const pctText = fmtPct(state.percentage);
+
+            modeBadge.textContent = state.isDiscountMode ? `Discount (-${pctText}%)` : `Markup (+${pctText}%)`;
+            savingsLabel.textContent = state.isDiscountMode ? 'You Save:' : 'Extra Added:';
+            savingsDisplay.className = 'font-bold text-sm ' + (state.isDiscountMode ? 'text-emerald-400' : 'text-blue-400');
+
+            const r = compute();
+            if (!r) {
+                finalPriceDisplay.textContent = '0';
+                savingsDisplay.textContent = '₹0.00';
+                equationText.textContent = `₹0 ${sign} ${pctText}%`;
+                return;
+            }
+            finalPriceDisplay.textContent = fmtPlain(r.final);
+            savingsDisplay.textContent = fmtMoney(r.delta);
+            equationText.textContent = `₹${fmtPlain(r.price)} ${sign} ${pctText}%`;
+        }
+
+        // ---- UI state ----
+        function updateModeUI() {
+            const on = 'flex-1 py-1.5 rounded-lg font-bold transition-all flex items-center justify-center space-x-1 bg-accentOrange text-slate-950 shadow';
+            const off = 'flex-1 py-1.5 rounded-lg font-bold text-slate-400 transition-all flex items-center justify-center space-x-1';
+            modeDiscountBtn.className = state.isDiscountMode ? on : off;
+            modeMarkupBtn.className = state.isDiscountMode ? off : on;
+        }
+
+        function updatePresetUI() {
+            presetButtons.forEach((btn) => {
+                const active = parseFloat(btn.dataset.pct) === state.percentage;
+                btn.className = 'preset-btn py-1.5 rounded-lg font-semibold text-xs transition btn-active ' + (active
+                    ? 'bg-accentOrange/20 border-2 border-accentOrange font-bold text-accentOrange shadow-md'
+                    : 'bg-darkCard border border-white/5 text-slate-300');
+            });
+            activePresetLabel.textContent = fmtPct(state.percentage) + '%';
+        }
+
+        function updateDisplay() {
+            if (state.priceStr.length > 0) {
+                priceVal.textContent = state.priceStr;
+                placeholderVal.classList.add('hidden');
+            } else {
+                priceVal.textContent = '';
+                placeholderVal.classList.remove('hidden');
+            }
+            calculate();
+        }
+
+        // ---- History ----
+        let autoSaveTimer;
+        function debounceHistoryAdd() {
+            clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(() => saveCurrentToHistory(true), AUTO_SAVE_MS);
+        }
+
+        function saveCurrentToHistory(silent) {
+            clearTimeout(autoSaveTimer);
+            const r = compute();
+            if (!r) { if (!silent) showToast('Enter a price first'); return false; }
+
+            const entry = { price: r.price, pct: r.pct, discount: r.discount, final: r.final, delta: r.delta };
+            const last = state.history[0];
+            if (last && last.price === entry.price && last.pct === entry.pct && last.discount === entry.discount) {
+                return false; // duplicate of newest entry
+            }
+            state.history.unshift(entry);
+            state.history = state.history.slice(0, MAX_HISTORY);
+            store.set('rupee_calc_history', JSON.stringify(state.history));
+            renderHistory();
+            return true;
+        }
+
+        function renderHistory() {
+            historyList.querySelectorAll('.history-item').forEach((el) => el.remove());
+            historyCount.textContent = `${state.history.length} item${state.history.length === 1 ? '' : 's'}`;
+            emptyHistoryText.classList.toggle('hidden', state.history.length > 0);
+
+            state.history.forEach((h, i) => {
+                const row = document.createElement('button');
+                row.className = 'history-item w-full flex justify-between items-center bg-darkCard border border-white/5 rounded-lg px-2 py-1 text-left btn-active';
+                row.dataset.index = i;
+
+                const left = document.createElement('span');
+                left.className = 'text-[11px] text-slate-400 font-mono';
+                left.textContent = `₹${fmtPlain(h.price)} ${h.discount ? '-' : '+'} ${fmtPct(h.pct)}%`;
+
+                const right = document.createElement('span');
+                right.className = 'text-xs font-bold ' + (h.discount ? 'text-emerald-400' : 'text-blue-400');
+                right.textContent = '₹' + fmtPlain(h.final);
+
+                row.append(left, right);
+                historyList.appendChild(row);
+            });
+        }
+
+        historyList.addEventListener('click', (e) => {
+            const row = e.target.closest('.history-item');
+            if (!row) return;
+            const h = state.history[parseInt(row.dataset.index, 10)];
+            if (!h) return;
+            clearTimeout(autoSaveTimer);
+            state.priceStr = String(h.price);
+            state.percentage = h.pct;
+            state.isDiscountMode = h.discount;
+            updateModeUI(); updatePresetUI(); updateDisplay();
+            showToast('Loaded from history');
+        });
+
+        // ---- Keypad ----
+        function handleKeypress(key) {
+            if (key === 'clear') {
+                state.priceStr = '';
+            } else if (key === 'backspace') {
+                state.priceStr = state.priceStr.slice(0, -1);
+            } else if (key === '.') {
+                if (!state.priceStr.includes('.')) {
+                    state.priceStr = state.priceStr === '' ? '0.' : state.priceStr + '.';
+                }
+            } else if (key === '00') {
+                if (state.priceStr !== '' && state.priceStr !== '0' && !state.priceStr.includes('.') && state.priceStr.length < 7) {
+                    state.priceStr += '00';
+                }
+            } else {
+                if (state.priceStr === '0') {
+                    state.priceStr = key;
+                } else if (state.priceStr.length < 9) {
+                    const parts = state.priceStr.split('.');
+                    if (parts.length < 2 || parts[1].length < 2) state.priceStr += key;
+                }
+            }
+            updateDisplay();
+            debounceHistoryAdd();
+        }
+
+        $('keypad').addEventListener('click', (e) => {
+            const btn = e.target.closest('button');
+            if (!btn || btn.dataset.key === undefined) return;
+            handleKeypress(btn.dataset.key);
+        });
+
+        $('clearInputBtn').addEventListener('click', () => handleKeypress('clear'));
+
+        $('equalsBtn').addEventListener('click', () => {
+            if (saveCurrentToHistory(false)) showToast('Saved to history!');
+            else if (compute()) showToast('Already in history');
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (document.activeElement === customPctInput) return;
+            if (e.key >= '0' && e.key <= '9') handleKeypress(e.key);
+            else if (e.key === '.') handleKeypress('.');
+            else if (e.key === 'Backspace') handleKeypress('backspace');
+            else if (e.key === 'Escape') handleKeypress('clear');
+            else if (e.key === 'Enter') { if (saveCurrentToHistory(false)) showToast('Saved to history!'); }
+        });
+
+        // ---- Mode toggle ----
+        function setMode(isDiscount) {
+            state.isDiscountMode = isDiscount;
+            store.set('rupee_calc_mode', isDiscount ? 'discount' : 'markup');
+            updateModeUI();
+            calculate();
+            debounceHistoryAdd();
+        }
+        modeDiscountBtn.addEventListener('click', () => setMode(true));
+        modeMarkupBtn.addEventListener('click', () => setMode(false));
+
+        // ---- Percentage ----
+        function setPercentage(pct, toastText) {
+            state.percentage = pct;
+            store.set('rupee_calc_pct', String(pct));
+            updatePresetUI();
+            calculate();
+            debounceHistoryAdd();
+            if (toastText) showToast(toastText);
+        }
+
+        presetButtons.forEach((btn) => {
+            btn.addEventListener('click', () => {
+                const pct = parseFloat(btn.dataset.pct);
+                setPercentage(pct, `Default set to ${pct}%`);
+            });
+        });
+
+        function saveCustomPct() {
+            const v = parseFloat(customPctInput.value);
+            if (isNaN(v) || v < 0 || v > 100) { showToast('Enter 0 to 100'); return; }
+            setPercentage(v, `Default set to ${fmtPct(v)}%`);
+            customPctInput.value = '';
+            customPctInput.blur();
+        }
+        $('saveCustomPctBtn').addEventListener('click', saveCustomPct);
+        customPctInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') saveCustomPct(); });
+
+        // Header slider icon / "Saved: x%" label both jump to the custom box
+        function focusCustom() { customPctInput.focus(); }
+        $('settingsBtn').addEventListener('click', focusCustom);
+        $('editPresetBtn').addEventListener('click', focusCustom);
+
+        // ---- Clear history ----
+        $('clearHistoryBtn').addEventListener('click', () => {
+            if (!state.history.length) { showToast('History is empty'); return; }
+            state.history = [];
+            store.set('rupee_calc_history', '[]');
+            renderHistory();
+            showToast('History cleared');
+        });
+
+        // ---- Init ----
+        function init() {
+            const savedPct = parseFloat(store.get('rupee_calc_pct'));
+            if (!isNaN(savedPct) && savedPct >= 0 && savedPct <= 100) state.percentage = savedPct;
+
+            if (store.get('rupee_calc_mode') === 'markup') state.isDiscountMode = false;
+
+            try {
+                const h = JSON.parse(store.get('rupee_calc_history') || '[]');
+                if (Array.isArray(h)) state.history = h.slice(0, MAX_HISTORY);
+            } catch (e) { state.history = []; }
+
+            updateModeUI();
+            updatePresetUI();
+            renderHistory();
+            updateDisplay();
+        }
+        init();
+    });
+    </script>
+</body>
+</html>
